@@ -45,5 +45,3 @@ def accumulate[X, Y](iterable: Iterable[X], func: Callable[[Y, X], Y], *, initia
 
     return itertools.accumulate(iterable, func)
 
-
-
