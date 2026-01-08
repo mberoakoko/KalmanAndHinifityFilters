@@ -34,7 +34,8 @@ def update(H: NDArray, R: NDArray) -> Callable[[PredictionState, NDArray], Predi
 
     return _update
 
-def kalman_step(predict_func: PredictProto, update_func: UpdateProto) -> Callable[[PredictionState, NDArray], PredictionState]:
+def kalman_step[P: PredictProto, U: UpdateProto, S: PredictionState]\
+                (predict_func: P, update_func: U) -> Callable[[S, NDArray], PredictionState]:
     def inner_step(state: PredictionState, z: NDArray):
         return update_func(predict_func(state), z)
     return inner_step
