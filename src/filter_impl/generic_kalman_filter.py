@@ -9,8 +9,10 @@ class PredictionState(NamedTuple):
     x: NDArray
     p: NDArray
 
+
 type PredictProto = Callable[[PredictionState], PredictionState]
 type UpdateProto = Callable[[PredictionState, NDArray], PredictionState]
+
 
 def predict(F: NDArray, Q: NDArray) -> Callable[[PredictionState], PredictionState]:
     def _inner_pred_func(state: PredictionState):
@@ -19,7 +21,9 @@ def predict(F: NDArray, Q: NDArray) -> Callable[[PredictionState], PredictionSta
             x=F @ x,
             p=F @ p @ F.T + Q
         )
+
     return _inner_pred_func
+
 
 def update(H: NDArray, R: NDArray) -> Callable[[PredictionState, NDArray], PredictionState]:
     def _update(state: PredictionState, z: NDArray) -> PredictionState:
@@ -34,11 +38,14 @@ def update(H: NDArray, R: NDArray) -> Callable[[PredictionState, NDArray], Predi
 
     return _update
 
-def kalman_step[P: PredictProto, U: UpdateProto, S: PredictionState]\
+
+def kalman_step[P: PredictProto, U: UpdateProto, S: PredictionState] \
                 (predict_func: P, update_func: U) -> Callable[[S, NDArray], PredictionState]:
     def inner_step(state: PredictionState, z: NDArray):
         return update_func(predict_func(state), z)
+
     return inner_step
+
 
 def example_execution():
     F = np.array([[1, 1], [0, 1]])  # State transition
@@ -57,6 +64,5 @@ def example_execution():
     final_history = functools.reduce(run_filter, measurements, [initial_belief])
     print(final_history)
 
+
 example_execution()
-
-
