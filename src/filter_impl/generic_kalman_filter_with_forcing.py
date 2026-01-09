@@ -3,7 +3,7 @@ import numpy as np
 from numpy.typing import NDArray
 from enum import Enum, auto
 from typing import Callable, NamedTuple
-from src.filter_impl.generic_kalman_filter import kalman_step
+from src.utils import iterate as abstract_iter
 
 class PredictionState(NamedTuple):
     x: NDArray
@@ -55,6 +55,29 @@ def update(H: NDArray, R: NDArray, cov_update_law: CovUpdateLaw = CovUpdateLaw.L
 
     return _update_law
 
+def __kalman_step(predict_function: PredictProto, update_function: UpdateProto):
+    def inner_func(state: PredictionState, z: NDArray) -> PredictionState:
+        return update_function(predict_function(state), z)
+    return inner_func
 
-def create_kalman_step():
-    ...
+type FilterStep = Callable[[PredictionState, NDArray], PredictionState]
+
+def create_kalman_step(
+        F: NDArray,
+        G: NDArray,
+        Q: NDArray,
+        H: NDArray,
+        R: NDArray,
+        covariance_update_law: CovUpdateLaw
+) -> FilterStep:
+    return __kalman_step(
+        predict_function=predict(F, G, Q),
+        update_function=update(H, R, covariance_update_law)
+    )
+
+def filter_measurements(filter_step: FilterStep, initial_belief: PredictionState,  measurements: NDArray) -> list[PredictionState]:
+    def __run_filter(beliefs: list[PredictionState], measurement: NDArray) -> list[PredictionState]:
+        last_belief = beliefs[-1]
+        return beliefs + [filter_step(last_belief, measurement)]
+    return functools.reduce(__run_filter, measurements, [initial_belief])
+
