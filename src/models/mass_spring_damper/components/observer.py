@@ -1,6 +1,8 @@
 import control
 import numpy as np
 from numpy.typing import NDArray
+import dataclasses
+
 
 def _generate_optimal_observer_gain(system: control.StateSpace, Q: NDArray, R: NDArray) -> NDArray:
     if np.linalg.matrix_rank(control.obsv(system.A, system.C)) < system.A.shape[0]:
@@ -23,13 +25,13 @@ class LuenbergerObserver:
         return self.system.A @ x + self.system.B @ u_ @ (y - self.L @ x)
 
     def __output(self, t: float, x: NDArray, u: NDArray, params:dict = None) -> NDArray:
-        return self.system.C @ x 
+        return x
 
 
     def create_observer(self) -> control.NonlinearIOSystem:
         return control.NonlinearIOSystem(
             self.__update, self.__output,
             name="Observer",
-            inputs=("", ),
-            outputs=("", ),
+            inputs=("y","u" ),
+            outputs=("x_1_hat", "x_2_hat","x_3_hat", "x_4_hat"),
         )

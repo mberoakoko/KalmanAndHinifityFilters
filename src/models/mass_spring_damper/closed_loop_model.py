@@ -1,3 +1,8 @@
+import control
+import numpy as np
+
+from components.plant import ModelParametization, create_mass_spring_damper
+from components.controller import Controller, FullStateLQRController
 
 def create_simple_closed_loop_system(plant_params: ModelParametization):
     plant: control.StateSpace = create_mass_spring_damper(plant_params)
@@ -21,5 +26,5 @@ if __name__ == "__main__":
         d_1=0.9,
         d_2=0.9,
         k_1=0.4,
-        k_2=0.4,
+        k_2=0.4
     ))

@@ -1,5 +1,6 @@
 from typing import overload, override
 
+import numpy as np
 from numpy.typing import NDArray
 import control
 import dataclasses
