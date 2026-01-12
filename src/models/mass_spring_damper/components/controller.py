@@ -23,7 +23,12 @@ class FullStateLQRController(IControllerStrategy):
     K: NDArray = dataclasses.field(init=False)
 
     def __post_init__(self):
-        K, _, _ = control.lqr(self.plant.A, self.plant.B, self.Q, self.R)
+        controllability_matrix = control.ctrb(self.plant.A, self.plant.B)
+        not_controllable = np.linalg.matrix_rank(controllability_matrix) == np.linalg.matrix_rank(self.plant.A)
+        if not_controllable:
+            raise ValueError(f"The given system is not controllable with rank = {np.linalg.matrix_rank(controllability_matrix)}")
+
+        self.K, _, _ = control.lqr(self.plant.A, self.plant.B, self.Q, self.R)
 
     @override
     def update(self, t: float, x: NDArray, u: NDArray, params:dict = None) -> NDArray | None:
