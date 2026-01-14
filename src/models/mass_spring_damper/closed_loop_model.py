@@ -5,18 +5,22 @@ from components.plant import ModelParametization, create_mass_spring_damper
 from components.controller import Controller, FullStateLQRController
 
 def create_simple_closed_loop_system(plant_params: ModelParametization):
-    plant: control.StateSpace = create_mass_spring_damper(plant_params)
-    print(plant.poles())
+    plant: control.StateSpace = create_mass_spring_damper(params=plant_params, full_state=True)
     controller = Controller(
         controller=FullStateLQRController(
             plant=plant,
             Q=10 * np.eye(4),
             R=10 * np.eye(1),
         ),
-        inputs=("", ),
-        outputs=("", ),
+        inputs=("x_1","x_2","x_3","x_4", "ref"),
+        outputs=("u", ),
     ).create_controller()
-    print(controller)
+
+    print(plant)
+
+    # return control.interconnect(
+    #     [plant, controller],
+    # )
 
 
 if __name__ == "__main__":

@@ -30,6 +30,9 @@ class FullStateLQRController(IControllerStrategy):
             raise ValueError(f"The given system is not controllable with rank = {np.linalg.matrix_rank(controllability_matrix)}")
 
         self.K, _, _ = control.lqr(self.plant.A, self.plant.B, self.Q, self.R)
+        self.K_2 = np.linalg.pinv(-self.plant.C  * (self.plant.A - self.plant.B @ self.K) @ self.plant.B)
+        print(self.K)
+        print(self.K_2)
 
     @override
     def update(self, t: float, x: NDArray, u: NDArray, params:dict = None) -> NDArray | None:
@@ -37,15 +40,17 @@ class FullStateLQRController(IControllerStrategy):
 
     @override
     def output(self, t: float, x: NDArray, u: NDArray, params:dict = None) -> NDArray | None:
-        return self.K @ x
+        x_ = x[:-1]
+        ref = x[-1]
+        return -self.K @ x
 
 
 
 @dataclasses.dataclass
 class Controller:
     controller: IControllerStrategy
-    inputs: tuple[str]
-    outputs: tuple[str]
+    inputs: tuple[str, ...]
+    outputs: tuple[str, ...]
     name: str = "Controller"
 
     def create_controller(self) -> control.NonlinearIOSystem:
